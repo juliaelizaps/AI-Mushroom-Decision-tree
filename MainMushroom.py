@@ -88,3 +88,58 @@ def compute_information_gain(X, y, node_indices, feature):
         information_gain = node_entropy - weighted_entropy
     return information_gain
 
+info_gain0 = compute_information_gain(X_train, y_train, root_indices, feature=0)
+print("Information Gain from splitting the root on brown cap: ", info_gain0)
+
+info_gain1 = compute_information_gain(X_train, y_train, root_indices, feature=1)
+print("Information Gain from splitting the root on tapering stalk shape: ", info_gain1)
+
+info_gain2 = compute_information_gain(X_train, y_train, root_indices, feature=2)
+print("Information Gain from splitting the root on solitary: ", info_gain2)
+
+# UNIT TESTS
+compute_information_gain_test(compute_information_gain)
+
+# UNQ_C4
+# GRADED FUNCTION: get_best_split
+
+def get_best_split(X, y, node_indices):   
+    num_features = X.shape[1]
+    best_feature = -1
+    max_info_gain = 0
+    for feature in range(num_features): 
+        info_gain = compute_information_gain(X, y, node_indices, feature)
+        if info_gain > max_info_gain:  
+            max_info_gain = info_gain
+            best_feature = feature        
+    return best_feature
+
+best_feature = get_best_split(X_train, y_train, root_indices)
+print("Best feature to split on: %d" % best_feature)
+# UNIT TESTS
+get_best_split_test(get_best_split)
+
+# Not graded
+tree = []
+
+def build_tree_recursive(X, y, node_indices, branch_name, max_depth, current_depth):
+
+    if current_depth == max_depth:
+        formatting = " "*current_depth + "-"*current_depth
+        print(formatting, "%s leaf node with indices" % branch_name, node_indices)
+        return
+  
+    best_feature = get_best_split(X, y, node_indices) 
+    
+    formatting = "-"*current_depth
+    print("%s Depth %d, %s: Split on feature: %d" % (formatting, current_depth, branch_name, best_feature))
+
+    left_indices, right_indices = split_dataset(X, node_indices, best_feature)
+    tree.append((left_indices, right_indices, best_feature))
+    
+
+    build_tree_recursive(X, y, left_indices, "Left", max_depth, current_depth+1)
+    build_tree_recursive(X, y, right_indices, "Right", max_depth, current_depth+1)
+
+build_tree_recursive(X_train, y_train, root_indices, "Root", max_depth=2, current_depth=0)
+generate_tree_viz(root_indices, y_train, tree)
